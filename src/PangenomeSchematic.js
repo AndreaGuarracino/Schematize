@@ -1,5 +1,6 @@
 import React from "react";
 import { observe } from "mobx";
+import { urlExists } from "./URL";
 
 class PangenomeSchematic extends React.Component {
   constructor(props) {
@@ -10,13 +11,17 @@ class PangenomeSchematic extends React.Component {
     super(props);
     this.pathNames = [];
     this.components = [];
+    this.metadata = [];
 
     this.loadIndexFile(this.props.store.jsonName) //initializes this.chunk_index
       .then(() => this.jsonFetch(this.props.store.getChunkURLs()[0]))
       .then(this.loadFirstJSON.bind(this));
+    this.loadMetadataFile(this.props.store.jsonName);
+
     //whenever jsonName changes,
     observe(this.props.store, "jsonName", () => {
       this.loadIndexFile(this.props.store.jsonName);
+      this.loadMetadataFile(this.props.store.jsonName);
     });
     // console.log("public ", process.env.PUBLIC_URL ) //PUBLIC_URL is empty
   }
@@ -112,6 +117,27 @@ class PangenomeSchematic extends React.Component {
       console.warn(
         "Second chunk was earlier than the first.  Check the order you set store.chunkURLs"
       );
+    }
+  }
+  loadMetadataFile(jsonFilename) {
+    let mdataPath =
+      process.env.PUBLIC_URL + "test_data/" + jsonFilename + "/metadata.json";
+    if (urlExists(mdataPath)) {
+      console.log("Reading", mdataPath);
+      return fetch(mdataPath)
+        .then((res) => res.json())
+        .then((json) => { 
+          let firstacc = json[0][this.props.store.metaDataKey]
+          console.log("1st acc in file: " + json[0][this.props.store.metaDataKey]);
+          // var metaData = {};
+          // for (let i=0; i<json.length; i++) {
+          //   metaData[json[i][this.props.store.metaDataKey]] = json[i];
+          // }
+          this.props.store.setMetaData(json);
+          //this.props.store.setMetaData(metaData);
+          console.log("1st acc in store: " + this.props.store.metaData[0].Accession);
+          //console.log("1st acc in store: " + this.props.store.metaData[firstacc].Accession + " " + this.props.store.metaData[firstacc].Geo_Location);
+        });
     }
   }
   processArray() {

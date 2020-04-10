@@ -37,7 +37,9 @@ export class MatrixCell extends React.Component {
         '": ' +
         this.props.item[2] +
         " - " +
-        this.props.item[3]
+        this.props.item[3] +
+        " ; " +
+        this.props.metaData
     ); //[2] is first, [3] last
   }
   onLeave() {

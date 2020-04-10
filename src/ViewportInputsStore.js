@@ -10,10 +10,25 @@ const PathNucPos = types.model("PathNucPos", {
   nucPos: types.integer,
 });
 
+const metaDataModel = types.array(
+  types.model({
+    Accession: types.string,
+    Release_Date: types.string,
+    Species: types.string,
+    Length: types.integer,
+    Geo_Location: types.string,
+    Host: types.string,
+    Isolation_Source: types.string,
+    Collection_Date: types.string,
+    GenBank_Title: types.string
+  })
+);
+
 export let RootStore;
 RootStore = types
   .model({
     useVerticalCompression: false,
+    colorByGeo: false,
     beginEndBin: BeginEndBin,
     pixelsPerColumn: 7,
     pixelsPerRow: 7,
@@ -27,6 +42,9 @@ RootStore = types
     pathNucPos: types.optional(PathNucPos, { path: "path", nucPos: 0 }), // OR: types.maybe(PathNucPos)
     pathIndexServerAddress: "http://193.196.29.24:3010/",
     binWidth: 100,
+    //metaData: types.optional(types.array(types.string), ""),
+    metaDataKey: "Accession",
+    metaData: metaDataModel,
   })
   .actions((self) => {
     function updateBeginEndBin(newBegin, newEnd) {
@@ -79,6 +97,9 @@ RootStore = types
     function updateWidth(event) {
       self.pixelsPerColumn = Number(event.target.value);
     }
+    function toggleColorByGeo() {
+      self.colorByGeo = !self.colorByGeo;
+    }
     function tryJSONpath(event) {
       const url =
         process.env.PUBLIC_URL +
@@ -127,6 +148,22 @@ RootStore = types
     function setBinWidth(binWidth) {
       self.binWidth = binWidth;
     }
+    function setMetaData(metadata) {
+      self.metaData = metadata;
+    }
+    function colorFromStr(colorKey) {
+      colorKey = colorKey.toString();
+      let hash = 0;
+      for (let i = 0; i < colorKey.length; i++) {
+        hash = colorKey.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      let colour = "#";
+      for (let j = 0; j < 3; j++) {
+        let value = (hash >> (j * 8)) & 0xff;
+        colour += ("00" + value.toString(16)).substr(-2);
+      }
+      return colour;
+    }
     return {
       updateBeginEndBin,
       updateTopOffset,
@@ -137,6 +174,7 @@ RootStore = types
       toggleUseVerticalCompression,
       updateHeight,
       updateWidth,
+      toggleColorByGeo,
       tryJSONpath,
       switchChunkURLs,
       getChunkURLs,
@@ -148,6 +186,8 @@ RootStore = types
       getPathNucPos,
       updatePathNucPos,
       setBinWidth,
+      setMetaData,
+      colorFromStr,
     };
   })
   .views((self) => ({}));

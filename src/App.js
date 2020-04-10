@@ -12,34 +12,6 @@ import ControlHeader from "./ControlHeader";
 import { observe } from "mobx";
 import { Rect, Text } from "react-konva";
 
-function stringToColor(linkColumn, highlightedLinkColumn) {
-  let colorKey = (linkColumn.downstream + 1) * (linkColumn.upstream + 1);
-  if (
-    highlightedLinkColumn &&
-    colorKey ===
-      (highlightedLinkColumn.downstream + 1) *
-        (highlightedLinkColumn.upstream + 1)
-  ) {
-    return "black";
-  } else {
-    return stringToColourSave(colorKey);
-  }
-}
-
-const stringToColourSave = function (colorKey) {
-  colorKey = colorKey.toString();
-  let hash = 0;
-  for (let i = 0; i < colorKey.length; i++) {
-    hash = colorKey.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let colour = "#";
-  for (let j = 0; j < 3; j++) {
-    let value = (hash >> (j * 8)) & 0xff;
-    colour += ("00" + value.toString(16)).substr(-2);
-  }
-  return colour;
-};
-
 class App extends Component {
 
   layerRef = React.createRef();
@@ -64,6 +36,11 @@ class App extends Component {
     observe(
       this.props.store,
       "useVerticalCompression",
+      this.recalcY.bind(this)
+    );
+    observe(
+      this.props.store,
+      "colorByGeo",
       this.recalcY.bind(this)
     );
     observe(this.props.store, "pixelsPerColumn", this.recalcXLayout.bind(this));
@@ -211,6 +188,20 @@ class App extends Component {
         }*/
   };
 
+  stringToColor = (linkColumn, highlightedLinkColumn) => {
+    let colorKey = (linkColumn.downstream + 1) * (linkColumn.upstream + 1);
+    if (
+      highlightedLinkColumn &&
+      colorKey ===
+        (highlightedLinkColumn.downstream + 1) *
+          (highlightedLinkColumn.upstream + 1)
+    ) {
+      return "black";
+    } else {
+      return this.props.store.colorFromStr(colorKey);
+    }
+  };
+
   updateHighlightedNode = (linkRect) => {
     this.setState({ highlightedLink: linkRect });
     // this.props.store.updateHighlightedLink(linkRect); // TODO this does not work, ask Robert about it
@@ -280,7 +271,7 @@ class App extends Component {
       firstDepartureColumn,
       j
     );
-    let localColor = stringToColor(linkColumn, this.state.highlightedLink);
+    let localColor = this.stringToColor(linkColumn, this.state.highlightedLink);
     return (
       <LinkColumn
         store={this.props.store}
@@ -303,7 +294,7 @@ class App extends Component {
         store={this.props.store}
         key={"arrow" + link.linkColumn.key}
         link={link}
-        color={stringToColor(link.linkColumn, this.state.highlightedLink)}
+        color={this.stringToColor(link.linkColumn, this.state.highlightedLink)}
         updateHighlightedNode={this.updateHighlightedNode}
       />
     );

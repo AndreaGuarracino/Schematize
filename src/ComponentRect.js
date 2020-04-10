@@ -79,6 +79,17 @@ class ComponentRect extends React.Component {
       }
       this_y = this.props.compressed_row_mapping[row_n];
     }
+    let pathName = this.props.pathNames[row_n];
+    let rowColor = "#838383"
+    if (this.props.store.colorByGeo && this.props.store.metaData) {
+      let metaData = this.props.store.metaData;
+      for (let i = 0; i < metaData.length; i++) {
+        if (pathName === metaData[i].Accession) {
+          rowColor = this.props.store.colorFromStr(metaData[i].Geo_Location);
+          break;
+        }
+      }
+    }
     return row.map((cell, x) => {
       if (cell.length) {
         return (
@@ -86,7 +97,7 @@ class ComponentRect extends React.Component {
             key={"occupant" + row_n + x}
             item={cell}
             store={this.props.store}
-            pathName={this.props.pathNames[row_n]}
+            pathName={pathName}
             x={x_val + x * this.props.store.pixelsPerColumn}
             y={
               this_y * this.props.store.pixelsPerRow +
@@ -95,7 +106,8 @@ class ComponentRect extends React.Component {
             row_number={row_n}
             width={width}
             height={this.props.store.pixelsPerRow}
-            color={"#838383"}
+            color={rowColor}
+            //color={"#838383"}
           />
         );
       } else {

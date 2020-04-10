@@ -180,6 +180,11 @@ class ControlHeader extends React.Component {
               style={{ width: "30px" }}
             />
           </span>
+          <span>
+            {" "}
+            Color by Provenance:
+            <ColorGeoSwitch store={this.props.store} />
+          </span>
         </div>
       </div>
     );
@@ -207,4 +212,23 @@ class CompressedViewSwitch extends React.Component {
 CompressedViewSwitch.propTypes = {
   store: PropTypes.object,
 };
+
+class ColorGeoSwitch extends React.Component {
+  render() {
+    return (
+      <input
+        type="checkbox"
+        value={
+          <Observer>{() => this.props.store.colorByGeo}</Observer>
+        }
+        onChange={this.props.store.toggleColorByGeo}
+      />
+    );
+  }
+}
+
+ColorGeoSwitch.propTypes = {
+  store: PropTypes.object,
+};
+
 export default ControlHeader;
