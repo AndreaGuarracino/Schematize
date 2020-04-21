@@ -127,16 +127,18 @@ class PangenomeSchematic extends React.Component {
       return fetch(mdataPath)
         .then((res) => res.json())
         .then((json) => { 
-          let firstacc = json[0][this.props.store.metaDataKey]
-          console.log("1st acc in file: " + json[0][this.props.store.metaDataKey]);
-          // var metaData = {};
-          // for (let i=0; i<json.length; i++) {
-          //   metaData[json[i][this.props.store.metaDataKey]] = json[i];
-          // }
-          this.props.store.setMetaData(json);
-          //this.props.store.setMetaData(metaData);
-          console.log("1st acc in store: " + this.props.store.metaData[0].Accession);
-          //console.log("1st acc in store: " + this.props.store.metaData[firstacc].Accession + " " + this.props.store.metaData[firstacc].Geo_Location);
+          var metaData = {};
+          //let json_entries = [];
+          for (let i=0; i<json.length; i++) {
+            metaData[json[i][this.props.store.metaDataKey]] = json[i];
+            // if (i == 0) {
+            //   for (let [key, value] of Object.entries(json[0])) {
+            //     json_entries.push(key);
+            //   }
+            //   this.props.store.setMetaDataChoices(json_entries);
+            // }
+          }
+          this.props.store.setMetaData(metaData);
         });
     }
   }

@@ -31,6 +31,10 @@ ConnectorRect.propTypes = {
 export class MatrixCell extends React.Component {
   onHover() {
     //tooltip: this.props.item.mean_pos
+    let str = "";
+    if (this.props.store.metaData.get(this.props.pathName) !== undefined) {
+      str = " ; " + this.props.store.metaData.get(this.props.pathName).Geo_Location;
+    }
     this.props.store.updateCellTooltipContent(
       '"' +
         this.props.pathName +
@@ -38,8 +42,7 @@ export class MatrixCell extends React.Component {
         this.props.item[2] +
         " - " +
         this.props.item[3] +
-        " ; " +
-        this.props.metaData
+        str
     ); //[2] is first, [3] last
   }
   onLeave() {

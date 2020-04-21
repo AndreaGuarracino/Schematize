@@ -8,6 +8,20 @@ const zip = (arr, ...arrs) => {
   return arr.map((val, i) => arrs.reduce((a, arr) => [...a, arr[i]], [val]));
 };
 
+function colorFromStr(colorKey) {
+  colorKey = colorKey.toString();
+  let hash = 0;
+  for (let i = 0; i < colorKey.length; i++) {
+    hash = colorKey.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let colour = "#";
+  for (let j = 0; j < 3; j++) {
+    let value = (hash >> (j * 8)) & 0xff;
+    colour += ("00" + value.toString(16)).substr(-2);
+  }
+  return colour;
+}
+
 export function compress_visible_rows(components) {
   /*Returns a Map with key of the original row number and value of the new, compressed row number.
    * Use this for y values of occupancy and LinkColumn cells.  */
@@ -83,11 +97,8 @@ class ComponentRect extends React.Component {
     let rowColor = "#838383"
     if (this.props.store.colorByGeo && this.props.store.metaData) {
       let metaData = this.props.store.metaData;
-      for (let i = 0; i < metaData.length; i++) {
-        if (pathName === metaData[i].Accession) {
-          rowColor = this.props.store.colorFromStr(metaData[i].Geo_Location);
-          break;
-        }
+      if (metaData.get(pathName) !== undefined) {
+        rowColor = colorFromStr(metaData.get(pathName).Geo_Location);
       }
     }
     return row.map((cell, x) => {
@@ -107,7 +118,6 @@ class ComponentRect extends React.Component {
             width={width}
             height={this.props.store.pixelsPerRow}
             color={rowColor}
-            //color={"#838383"}
           />
         );
       } else {

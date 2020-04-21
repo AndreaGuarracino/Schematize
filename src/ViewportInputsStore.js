@@ -10,19 +10,17 @@ const PathNucPos = types.model("PathNucPos", {
   nucPos: types.integer,
 });
 
-const metaDataModel = types.array(
-  types.model({
-    Accession: types.string,
-    Release_Date: types.string,
-    Species: types.string,
-    Length: types.integer,
-    Geo_Location: types.string,
-    Host: types.string,
-    Isolation_Source: types.string,
-    Collection_Date: types.string,
-    GenBank_Title: types.string
-  })
-);
+const metaDataModelEntry = types.model({
+  Accession: types.identifier,
+  Release_Date: types.string,
+  Species: types.string,
+  Length: types.integer,
+  Geo_Location: types.string,
+  Host: types.string,
+  Isolation_Source: types.string,
+  Collection_Date: types.string,
+  GenBank_Title: types.string
+});
 
 export let RootStore;
 RootStore = types
@@ -42,9 +40,9 @@ RootStore = types
     pathNucPos: types.optional(PathNucPos, { path: "path", nucPos: 0 }), // OR: types.maybe(PathNucPos)
     pathIndexServerAddress: "http://193.196.29.24:3010/",
     binWidth: 100,
-    //metaData: types.optional(types.array(types.string), ""),
     metaDataKey: "Accession",
-    metaData: metaDataModel,
+    metaData: types.map(metaDataModelEntry),
+    //metaDataChoices: types.array(types.string)
   })
   .actions((self) => {
     function updateBeginEndBin(newBegin, newEnd) {
@@ -149,20 +147,15 @@ RootStore = types
       self.binWidth = binWidth;
     }
     function setMetaData(metadata) {
-      self.metaData = metadata;
+      for (let [key, value] of Object.entries(metadata)) {
+        self.metaData.set(key, value);
+      }
     }
-    function colorFromStr(colorKey) {
-      colorKey = colorKey.toString();
-      let hash = 0;
-      for (let i = 0; i < colorKey.length; i++) {
-        hash = colorKey.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      let colour = "#";
-      for (let j = 0; j < 3; j++) {
-        let value = (hash >> (j * 8)) & 0xff;
-        colour += ("00" + value.toString(16)).substr(-2);
-      }
-      return colour;
+    function getMetaData(key) {
+      self.metaData.get(key);
+    }
+    function setMetaDataChoices(ar) {
+      self.metaDataChoices = ar;
     }
     return {
       updateBeginEndBin,
@@ -187,7 +180,8 @@ RootStore = types
       updatePathNucPos,
       setBinWidth,
       setMetaData,
-      colorFromStr,
+      getMetaData,
+      setMetaDataChoices
     };
   })
   .views((self) => ({}));
